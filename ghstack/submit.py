@@ -388,17 +388,6 @@ class Submitter:
         object.__setattr__(self, "repo_owner", repo["name_with_owner"]["owner"])
         object.__setattr__(self, "repo_name", repo["name_with_owner"]["name"])
 
-        if repo["is_fork"]:
-            raise RuntimeError(
-                "Cowardly refusing to upload diffs to a repository that is a "
-                "fork.  ghstack expects '{}' of your Git checkout to point "
-                "to the upstream repository in question.  If your checkout does "
-                "not comply, please either adjust your remotes (by editing "
-                ".git/config) or change the 'remote_name' field in your .ghstackrc "
-                "file to point to the correct remote.  If this message is in "
-                "error, please register your complaint on GitHub issues (or edit "
-                "this line to delete the check above).".format(self.remote_name)
-            )
         object.__setattr__(self, "repo_id", repo["id"])
         if self.base_opt is not None:
             default_branch = self.base_opt
