@@ -139,7 +139,7 @@ RE_GHSTACK_COMMENT_ID = re.compile(r"^ghstack-comment-id: (.+)\n?", re.MULTILINE
 
 
 def branch(username: str, ghnum: GhNumber, kind: BranchKind) -> GitCommitHash:
-    return GitCommitHash("gh/{}/{}/{}".format(username, ghnum, kind))
+    return GitCommitHash("user/{}/{}/{}".format(username, ghnum, kind))
 
 
 def branch_base(username: str, ghnum: GhNumber) -> GitCommitHash:
@@ -820,7 +820,7 @@ the line 'Pull Request resolved' and then run ghexport again.
             )
 
         # TODO: Hmm, I'm not sure why this matches
-        m = re.match(r"gh/([^/]+)/([0-9]+)/head$", r["headRefName"])
+        m = re.match(r"user/([^/]+)/([0-9]+)/head$", r["headRefName"])
         if m is None:
             if is_ghexport:
                 raise RuntimeError(
@@ -1027,7 +1027,7 @@ is closed (likely due to being merged).  Please rebase to upstream and try again
             "for-each-ref",
             # Use OUR username here, since there's none attached to the
             # diff
-            "refs/remotes/{}/gh/{}".format(self.remote_name, self.username),
+            "refs/remotes/{}/user/{}".format(self.remote_name, self.username),
             "--format=%(refname)",
         ).split()
 
@@ -1046,7 +1046,7 @@ is closed (likely due to being merged).  Please rebase to upstream and try again
         if (username, ghnum) in self.seen_ghnums:
             raise RuntimeError(
                 "Something very strange has happened: a commit for "
-                f"the gh/{username}/{ghnum} occurs twice in your local "
+                f"the user/{username}/{ghnum} occurs twice in your local "
                 "commit stack.  This is usually because of a botched "
                 "rebase.  Please take a look at your git log and seek "
                 "help from your local Git expert."
