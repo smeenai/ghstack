@@ -68,24 +68,6 @@ def main(
     )["default_branch"]
 
     needs_force = False
-    try:
-        protection = github.get(
-            f"repos/{params['owner']}/{params['name']}/branches/{default_branch}/protection"
-        )
-        if not protection["allow_force_pushes"]["enabled"]:
-            raise RuntimeError(
-                """\
-Default branch {default_branch} is protected, and doesn't allow force pushes.
-ghstack land does not work.  You will not be able to land your ghstack; please
-resubmit your PRs using the normal pull request flow.
-
-See https://github.com/ezyang/ghstack/issues/50 for more details, or
-to complain to the ghstack authors."""
-            )
-        else:
-            needs_force = True
-    except ghstack.github.NotFoundError:
-        pass
 
     orig_ref, closed = lookup_pr_to_orig_ref_and_closed(
         github,
