@@ -13,6 +13,8 @@ from ghstack.types import GitCommitHash
 
 RE_GHSTACK_SOURCE_ID = re.compile(r"^ghstack-source-id: (.+)\n?", re.MULTILINE)
 
+RE_GHSTACK_COMMENT_ID = re.compile(r"^ghstack-comment-id: (.+)\n?", re.MULTILINE)
+
 
 def lookup_pr_to_orig_ref_and_closed(
     github: ghstack.github.GitHubEndpoint, *, owner: str, name: str, number: int
@@ -133,6 +135,7 @@ def main(
                 message = sh.git("show", "--format=format:%B", "--no-patch")
                 if isinstance(message, str):
                     message = RE_GHSTACK_SOURCE_ID.sub("", message)
+                    message = RE_GHSTACK_COMMENT_ID.sub("", message)
                     sh.git("commit", "--amend", "--message", message)
             except BaseException:
                 sh.git("cherry-pick", "--abort")
