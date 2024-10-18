@@ -11,6 +11,8 @@ import ghstack.shell
 from ghstack.diff import PullRequestResolved
 from ghstack.types import GitCommitHash
 
+RE_GHSTACK_SOURCE_ID = re.compile(r"^ghstack-source-id: (.+)\n?", re.MULTILINE)
+
 
 def lookup_pr_to_orig_ref_and_closed(
     github: ghstack.github.GitHubEndpoint, *, owner: str, name: str, number: int
@@ -128,6 +130,10 @@ def main(
         for orig_ref, _ in stack_orig_refs:
             try:
                 sh.git("cherry-pick", f"{remote_name}/{orig_ref}")
+                message = sh.git("show", "--format=format:%B", "--no-patch")
+                if isinstance(message, str):
+                    message = RE_GHSTACK_SOURCE_ID.sub("", message)
+                    sh.git("commit", "--amend", "--message", message)
             except BaseException:
                 sh.git("cherry-pick", "--abort")
                 raise
