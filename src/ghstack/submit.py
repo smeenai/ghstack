@@ -141,9 +141,9 @@ RE_GHSTACK_COMMENT_ID = re.compile(r"^ghstack-comment-id: (.+)\n?", re.MULTILINE
 
 
 # repo layout:
-#   - gh/username/23/head -- what we think GitHub's current tip for commit is
-#   - gh/username/23/base -- what we think base commit for commit is
-#   - gh/username/23/orig -- the "clean" commit history, i.e., what we're
+#   - users/username/23/head -- what we think GitHub's current tip for commit is
+#   - users/username/23/base -- what we think base commit for commit is
+#   - users/username/23/orig -- the "clean" commit history, i.e., what we're
 #                      rebasing, what you'd like to cherry-pick (???)
 #                      (Maybe this isn't necessary, because you can
 #                      get the "whole" diff from GitHub?  What about
@@ -152,13 +152,13 @@ RE_GHSTACK_COMMENT_ID = re.compile(r"^ghstack-comment-id: (.+)\n?", re.MULTILINE
 #
 # In direct mode, there is no base branch, instead:
 #
-#   - gh/username/23/next -- staging ground for commits that must exist
+#   - users/username/23/next -- staging ground for commits that must exist
 #     for later PRs in the stack to merge against, but should not be shown
 #     for the PR itself (because that PR was not submitted)
 
 
 def branch(username: str, ghnum: GhNumber, kind: BranchKind) -> GitCommitHash:
-    return GitCommitHash("gh/{}/{}/{}".format(username, ghnum, kind))
+    return GitCommitHash("users/{}/{}/{}".format(username, ghnum, kind))
 
 
 def branch_base(username: str, ghnum: GhNumber) -> GitCommitHash:
@@ -529,7 +529,7 @@ class Submitter:
             direct = direct_r
         if self.direct_opt is None and not direct:
             styles = {
-                re.fullmatch(r"gh/[^/]+/[0-9]+/base", base_ref) is None
+                re.fullmatch(r"users/[^/]+/[0-9]+/base", base_ref) is None
                 for pr_info in pr_info_cache.values()
                 if (base_ref := self._pr_ref_name(pr_info, "base")) is not None
             }
@@ -554,8 +554,8 @@ class Submitter:
             # that local base ref, so narrowing this fetch avoids unrelated
             # remote IO while preserving the usual submit semantics.
             await self.fetch(
-                f"+refs/heads/gh/{self.username}/*"
-                f":refs/remotes/{self.remote_name}/gh/{self.username}/*"
+                f"+refs/heads/users/{self.username}/*"
+                f":refs/remotes/{self.remote_name}/users/{self.username}/*"
             )
         if timer:
             timer.mark("fetch")
@@ -870,7 +870,7 @@ class Submitter:
             head_ref_name = self._pr_ref_name(pr_info, "head")
             if head_ref_name is None:
                 continue
-            m = re.match(r"gh/([^/]+)/([0-9]+)/head$", head_ref_name)
+            m = re.match(r"users/([^/]+)/([0-9]+)/head$", head_ref_name)
             if m is not None and m.group(1) != self.username:
                 usernames.add(m.group(1))
 
@@ -879,8 +879,8 @@ class Submitter:
             # referenced PRs.  However, this will interact poorly with
             # cross-author stacks, so it needs to be thought more carefully.
             await self.fetch(
-                f"+refs/heads/gh/{username}/*"
-                f":refs/remotes/{self.remote_name}/gh/{username}/*"
+                f"+refs/heads/users/{username}/*"
+                f":refs/remotes/{self.remote_name}/users/{username}/*"
             )
 
     async def prepare_updates(
@@ -1075,7 +1075,7 @@ class Submitter:
                 "the line 'Pull-Request' and then run ghexport again.\n"
             )
 
-        m = re.match(r"gh/([^/]+)/([0-9]+)/head$", head_ref_name)
+        m = re.match(r"users/([^/]+)/([0-9]+)/head$", head_ref_name)
         if m is None:
             if is_ghexport:
                 raise RuntimeError(
@@ -1362,7 +1362,7 @@ is closed (likely due to being merged).  Please rebase to upstream and try again
         refs = (
             await self.sh.agit(
                 "for-each-ref",
-                "refs/remotes/{}/gh/{}".format(self.remote_name, self.username),
+                "refs/remotes/{}/users/{}".format(self.remote_name, self.username),
                 "--format=%(refname)",
             )
         ).split()
@@ -1377,7 +1377,7 @@ is closed (likely due to being merged).  Please rebase to upstream and try again
         if (username, ghnum) in self.seen_ghnums:
             raise RuntimeError(
                 "Something very strange has happened: a commit for "
-                f"the gh/{username}/{ghnum} occurs twice in your local "
+                f"the users/{username}/{ghnum} occurs twice in your local "
                 "commit stack.  This is usually because of a botched "
                 "rebase.  Please take a look at your git log and seek "
                 "help from your local Git expert."
