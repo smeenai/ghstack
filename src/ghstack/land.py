@@ -8,6 +8,7 @@ import ghstack.git
 import ghstack.github
 import ghstack.github_utils
 import ghstack.shell
+import ghstack.submit
 from ghstack.diff import PullRequestResolved
 from ghstack.types import GitCommitHash
 
@@ -137,6 +138,8 @@ async def main(
 
             # Add PR number to commit message like GitHub does
             commit_msg = await sh.agit("log", "-1", "--pretty=%B")
+            commit_msg = ghstack.submit.RE_GHSTACK_SOURCE_ID.sub("", commit_msg)
+            commit_msg = ghstack.submit.RE_GHSTACK_COMMENT_ID.sub("", commit_msg)
             # Get the original author and committer dates to preserve the commit hash
             author_date = await sh.agit("log", "-1", "--pretty=%aD")
             committer_date = await sh.agit("log", "-1", "--pretty=%cD")
